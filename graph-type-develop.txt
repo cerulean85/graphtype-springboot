@@ -1,0 +1,25 @@
+sudo apt update -y
+sudo apt install openjdk-11-jdk
+
+sudo apt install nginx
+sudo service nginx start 
+sudo service nginx status
+
+sudo apt-get install net-tools
+sudo apt install mvn
+
+cd /home/ubuntu
+git clone https://github.com/cerulean85/graphtype-springboot.git
+
+cd application 
+mvn package
+java -jar target/application-0.0.1-SNAPSHOT.jar
+
+
+
+AWS 보안그룹 설정
+8080 포트 등록하기
+
+
+도커배포하기
+https://gksdudrb922.tistory.com/221
