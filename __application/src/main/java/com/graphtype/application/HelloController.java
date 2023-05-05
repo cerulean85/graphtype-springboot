@@ -1,5 +1,6 @@
 package com.graphtype.application;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,12 @@ import java.util.stream.Stream;
 
 @RestController
 public class HelloController {
+
+    private final KitchenService kitchen;
+    public HelloController(KitchenService kitchen) {
+        this.kitchen = kitchen;
+    }
+
     @GetMapping("/")
     Flux<String> hello() {
         return Flux.just("Hello", "World");
@@ -35,4 +42,18 @@ public class HelloController {
     Mono<String> echo(@RequestBody Mono<String> body) {
         return body.map(String::toUpperCase);
     }
+
+
+
+    @GetMapping(value = "/server", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    Flux<Dish> serveDishes() {
+        return this.kitchen.getDishes();
+    }
+
+    @GetMapping(value = "/served-dishes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    Flux<Dish> deliverDishes() {
+        return this.kitchen.getDishes() //
+                .map(dish -> Dish.deliver(dish));
+    }
+
 }
