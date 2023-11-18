@@ -1,13 +1,11 @@
 package com.graphtype.application.repository;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ScanRequest;
-import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.graphtype.application.etc.DateTimeUtil;
 import com.graphtype.application.model.Article;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,9 +20,11 @@ public class ArticleRepository {
     @Autowired
     private DynamoDBMapper dynamoDBMapper;
 
-    public Article createItem(Article customer) {
-        dynamoDBMapper.save(customer);
-        return customer;
+    public Article createItem(Article article) {
+        article.createdAt = DateTimeUtil.getCurrentDateTime();
+        article.updatedAt = article.createdAt;
+        dynamoDBMapper.save(article);
+        return article;
     }
     public Article getItem(String articleId, String articleType) {
         return dynamoDBMapper.load(Article.class, articleId, articleType);
@@ -78,6 +78,7 @@ public class ArticleRepository {
         return true;
     }
     public String updateItem(String articleId, Article article) {
+        article.updatedAt = DateTimeUtil.getCurrentDateTime();
         dynamoDBMapper.save(article,
                 new DynamoDBSaveExpression()
                         .withExpectedEntry("articleId",
