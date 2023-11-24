@@ -1,5 +1,0 @@
-- cd /home/ubuntu/git/graphtype-springboot/application/target
-- ./mvwn clean package
-- nohup java -jar application-0.0.1-SNAPSHOT.jar 2>&1 &
-- tail -f nohup.out
-- sudo apt install openjdk-17-sdk

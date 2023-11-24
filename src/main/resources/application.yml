@@ -1,0 +1,25 @@
+server:
+  port: 8082
+
+cloud:
+  aws:
+    s3:
+      bucket: zhdev-gallary
+      stack:
+        auto: false
+    credentials:
+      access-key: -
+      secret-key: -
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+    dynamodb:
+      endpoint: https://dynamodb.ap-northeast-2.amazonaws.com
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
