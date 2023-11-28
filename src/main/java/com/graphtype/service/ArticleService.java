@@ -27,7 +27,7 @@ public class ArticleService {
     public Mono<Boolean> deleteItem(String articleId, String articleType) {
         return  Mono.just(articleRepository.deleteItem(articleId, articleType));
     }
-    public Mono<String> updateItem(String articleId, Article article) {
-        return Mono.just(articleRepository.updateItem(articleId, article));
+    public Mono<String> updateItem(Article article) {
+        return Mono.just(articleRepository.updateItem(article));
     }
 }

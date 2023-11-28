@@ -69,7 +69,6 @@ public class AwsS3Uploader {
 
 
     public void delete(String fileName) {
-//        log.info("File Delete : " + fileName);
         amazonS3Client.deleteObject(bucket, fileName);
     }
 }

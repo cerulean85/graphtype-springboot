@@ -8,8 +8,8 @@ cloud:
       stack:
         auto: false
     credentials:
-      access-key: -
-      secret-key: -
+      access-key: AKIAXOIVJXCVIA5IX4WQ
+      secret-key: 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
     region:
       static: ap-northeast-2
       auto: false

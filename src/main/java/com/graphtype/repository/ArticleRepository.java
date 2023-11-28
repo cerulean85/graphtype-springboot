@@ -78,7 +78,8 @@ public class ArticleRepository {
         }
         return true;
     }
-    public String updateItem(String articleId, Article article) {
+    public String updateItem(Article article) {
+        String articleId = article.getArticleId();
         article.updatedAt = DateTimeUtil.getCurrentDateTime();
         dynamoDBMapper.save(article,
                 new DynamoDBSaveExpression()
