@@ -32,16 +32,24 @@ public class ArticleResourceDAO {
         });
     }
 
+//    @Transactional
+//    public void deleteArticleResource(List<File> resources) {
+//        String sql = "DELETE FROM resource_management WHERE resource_id = ?";
+//        this.template.batchUpdate(sql, resources, 10, (PreparedStatement ps, File resource) -> {
+//            ps.setString(1, resource.getResourceId());
+//        });
+//    }
+
     @Transactional
-    public void deleteArticleResource(List<File> resources) {
+    public void deleteArticleResource(List<ArticleResourceVO> resources) {
         String sql = "DELETE FROM resource_management WHERE resource_id = ?";
-        this.template.batchUpdate(sql, resources, 10, (PreparedStatement ps, File resource) -> {
+        this.template.batchUpdate(sql, resources, 10, (PreparedStatement ps, ArticleResourceVO resource) -> {
             ps.setString(1, resource.getResourceId());
         });
     }
 
-    public List<ArticleResourceVO> getArticleResourceList() {
-        String sql = "SELECT * FROM resource_management";
+    public List<ArticleResourceVO> getArticleResourceList(String articleId) {
+        String sql = "SELECT * FROM resource_management WHERE article_id = '" + articleId + "'";
         List<ArticleResourceVO> list = this.template.query(sql, new RowMapper<ArticleResourceVO>() {
 
             @Override
@@ -55,5 +63,4 @@ public class ArticleResourceDAO {
         });
         return list;
     }
-
 }

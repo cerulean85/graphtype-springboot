@@ -1,33 +1,147 @@
 package com.graphtype.service;
 
 
-import com.graphtype.model.Article;
+import com.graphtype.component.AwsS3Uploader;
+import com.graphtype.model.*;
 import com.graphtype.repository.ArticleRepository;
+import com.graphtype.repository.ArticleResourceDAO;
+import com.graphtype.repository.BotBoardDAO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ArticleService {
 
     @Autowired
     private ArticleRepository articleRepository;
 
-    public Mono<Article> getItem(String articleId, String articleType) {
-        return Mono.just(articleRepository.getItem(articleId, articleType));
+    @Autowired
+    private BotBoardDAO botBoardDAO;
+
+    @Autowired
+    private ArticleResourceDAO articleResourceDAO;
+
+    public Mono<Article> getItem(String author, String articleId) {
+        return Mono.just(articleRepository.getItem(author, articleId));
     }
+
+    public Mono<Article> getFeedback(String author, String articleId) {
+        BotBoardVO bot = botBoardDAO.getBotState(articleId);
+        String state = (bot == null) ? "error" : bot.getState();
+
+        Article article = new Article();
+        article.setState(state);
+
+        try {
+            Article resArticle = getItem(author, articleId).block();
+            article.setFeedback(resArticle.getFeedback());
+        } catch (Exception e) {
+            article.setFeedback(new ArrayList<FeedbackItem>());
+        }
+
+        return Mono.just(article);
+    }
+
     public Mono<Article> createItem(Article article) {
-        return Mono.just(articleRepository.createItem(article));
+        Mono<Article> res = Mono.just(articleRepository.createItem(article));
+        Article resultArticle = res.block();
+
+        assert resultArticle != null;
+        List<InventoryItem> inventory = resultArticle.getInventory();
+        List<File> imageSrcList = getResources(resultArticle, inventory);
+        if (imageSrcList.size() > 0)
+            articleResourceDAO.insertArticleResource(imageSrcList);
+
+        BotBoardVO botBoardVO = new BotBoardVO();
+        botBoardVO.setArticleId(article.getArticleId());
+        botBoardVO.setState("idle");
+        botBoardVO.setAuthor(article.getAuthor());
+        botBoardDAO.insertBotBoardItem(botBoardVO);
+
+        return res;
     }
-    public Mono<List<Article>> getItemsByArticleType(String articleType) {
-        return Mono.just(articleRepository.getItemsByArticleType(articleType));
+    public Mono<ArticleResponse> getItems(String author, int pageNo) {
+        return Mono.just(articleRepository.getItems(author, pageNo));
     }
-    public Mono<Boolean> deleteItem(String articleId, String articleType) {
-        return  Mono.just(articleRepository.deleteItem(articleId, articleType));
+
+    public Mono<ArticleResponse> searchItems(String searchText, int pageNo) {
+        return Mono.just(articleRepository.searchItems(searchText, pageNo));
     }
+    public Mono<Boolean> deleteItem(Article article, AwsS3Uploader awsS3Uploader) {
+        String articleId = article.getArticleId();
+        String author = article.getAuthor();
+        Mono<Article> selectRes = this.getItem(author, articleId);
+        Article readArticle = selectRes.block();
+
+        assert readArticle != null;
+        List<ArticleResourceVO> resources = articleResourceDAO.getArticleResourceList(articleId);
+        for (ArticleResourceVO vo: resources) {
+            try {
+                awsS3Uploader.delete(vo.getResourceId());
+            } catch(Exception e) {
+
+            }
+        }
+        articleResourceDAO.deleteArticleResource(resources);
+
+        BotBoardVO botBoardVO = new BotBoardVO();
+        botBoardVO.setArticleId(article.getArticleId());
+        botBoardDAO.deleteBotBoardItem(botBoardVO);
+
+        return  Mono.just(articleRepository.deleteItem(articleId, author));
+    }
+
     public Mono<String> updateItem(Article article) {
         return Mono.just(articleRepository.updateItem(article));
+    }
+
+    public Mono<Boolean> rechat(String articleId) {
+        BotBoardVO botBoardVO = new BotBoardVO();
+        botBoardVO.setArticleId(articleId);
+        botBoardVO.setState("wait");
+
+        boolean result = false;
+        result = botBoardDAO.updateBotBoardItemStateStop(botBoardVO);
+        if (!result) return Mono.just(false);
+
+        return Mono.just(result);
+    }
+
+    private List<File> getResources(Article resultArticle, List<InventoryItem> inventory) {
+        List<File> imageSrcList = new ArrayList<>();
+        for (InventoryItem item: inventory) {
+            if (item.getType().equals("image")) {
+                File resource = new File();
+                resource.setArticleId(resultArticle.getArticleId());
+                String[] temp = item.getContents().split("/");
+                if (temp.length == 0)
+                    continue;
+                String resourceId = "images/" + temp[temp.length-1];
+                resource.setResourceId(resourceId);
+                imageSrcList.add(resource);
+            }
+        }
+        return imageSrcList;
+    }
+
+    public void updateResourceMeta(File file, String articleId) {
+        if (file.url == null)
+            return;
+
+        String[] temp = file.url.split("/");
+        if (temp.length == 0)
+            return;
+
+        file.setResourceId("images/" + temp[temp.length-1]);
+        file.setArticleId(articleId);
+        List<File> files = new ArrayList<File>();
+        files.add(file);
+        articleResourceDAO.insertArticleResource(files);
     }
 }
