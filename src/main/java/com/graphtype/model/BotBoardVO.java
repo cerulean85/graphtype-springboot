@@ -11,4 +11,5 @@ public class BotBoardVO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private String author;
+    private String type;
 }

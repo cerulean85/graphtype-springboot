@@ -34,6 +34,7 @@ public class BotBoardDAO {
                     vo.setState(rs.getString("state"));
                     vo.setCreatedAt(rs.getTimestamp("created_at"));
                     vo.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    vo.setType(rs.getString("type"));
                     return vo;
                 }
             });
@@ -48,8 +49,8 @@ public class BotBoardDAO {
     @Transactional
     public boolean insertBotBoardItem(BotBoardVO vo) {
         try{
-            String sql = "INSERT INTO BotBoard(author, article_id, state) VALUES(?, ?, ?)";
-            this.template.update(sql, vo.getAuthor(), vo.getArticleId(), vo.getState());
+            String sql = "INSERT INTO BotBoard(author, article_id, state, type) VALUES(?, ?, ?, ?)";
+            this.template.update(sql, vo.getAuthor(), vo.getArticleId(), vo.getState(), vo.getType());
             return true;
         } catch(Exception ex) {
             return false;
@@ -59,8 +60,8 @@ public class BotBoardDAO {
     @Transactional
     public boolean updateBotBoardItem(BotBoardVO vo) {
         try {
-            String sql = "UPDATE BotBoard SET state = ? WHERE article_id = ?";
-            this.template.update(sql, vo.getState(), vo.getArticleId());
+            String sql = "UPDATE BotBoard SET state = ? WHERE article_id = ? AND type = ?";
+            this.template.update(sql, vo.getState(), vo.getArticleId(), vo.getType());
             return true;
         } catch(Exception ex) {
             return false;
@@ -70,8 +71,8 @@ public class BotBoardDAO {
     @Transactional
     public boolean updateBotBoardItemStateStop(BotBoardVO vo) {
         try {
-            String sql1 = "UPDATE BotBoard SET state = ? WHERE article_id = ?";
-            this.template.update(sql1, vo.getState(), vo.getArticleId());
+            String sql1 = "UPDATE BotBoard SET state = ? WHERE article_id = ? AND type = ?";
+            this.template.update(sql1, vo.getState(), vo.getArticleId(), vo.getType());
             return true;
         } catch(Exception ex) {
             return false;
@@ -82,7 +83,23 @@ public class BotBoardDAO {
     public boolean deleteBotBoardItem(BotBoardVO vo) {
         try {
             String sql = "DELETE FROM BotBoard WHERE article_id = ?";
-            this.template.update(sql, vo.getArticleId());
+            this.template. update(sql, vo.getArticleId());
+            return true;
+        } catch(Exception ex) {
+            return false;
+        }
+    }
+
+    @Transactional
+    public boolean insertOrUpdateBoardItem(BotBoardVO vo) {
+        try {
+            String sql = String.format("SELECT COUNT(*) BotBoard WHERE article_id = '%s' AND type = '%s'", vo.getArticleId(), vo.getType());
+            int rowCount = this.template.queryForObject(sql, Integer.class);
+            if (rowCount == 0) {
+                insertBotBoardItem(vo);
+            } else {
+                updateBotBoardItem(vo);
+            }
             return true;
         } catch(Exception ex) {
             return false;

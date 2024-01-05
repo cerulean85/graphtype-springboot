@@ -62,7 +62,7 @@ public class ArticleService {
         botBoardVO.setArticleId(article.getArticleId());
         botBoardVO.setState("idle");
         botBoardVO.setAuthor(article.getAuthor());
-        botBoardDAO.insertBotBoardItem(botBoardVO);
+        botBoardDAO.insertOrUpdateBoardItem(botBoardVO);
 
         return res;
     }
@@ -101,9 +101,10 @@ public class ArticleService {
         return Mono.just(articleRepository.updateItem(article));
     }
 
-    public Mono<Boolean> rechat(String articleId) {
+    public Mono<Boolean> rechat(String articleId, String botType) {
         BotBoardVO botBoardVO = new BotBoardVO();
         botBoardVO.setArticleId(articleId);
+        botBoardVO.setType(botType);
         botBoardVO.setState("wait");
 
         boolean result = false;

@@ -93,9 +93,12 @@ public class ArticleController {
     }
 
     @PutMapping(value = "/rechat")
-    Mono<ResponseEntity<Boolean>> rechat(@RequestBody Article article)
+    Mono<ResponseEntity<Boolean>> rechat(
+            @RequestParam("articleId") String articleId,
+            @RequestParam("type") String type
+    )
     {
-        Mono<Boolean> res = articleService.rechat(article.getArticleId());
+        Mono<Boolean> res = articleService.rechat(articleId, type);
         return res.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
