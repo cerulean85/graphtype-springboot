@@ -101,14 +101,14 @@ public class ArticleService {
         return Mono.just(articleRepository.updateItem(article));
     }
 
-    public Mono<Boolean> rechat(String articleId, String botType) {
+    public Mono<Boolean> rechat(String articleId, String author, String botType) {
         BotBoardVO botBoardVO = new BotBoardVO();
         botBoardVO.setArticleId(articleId);
+        botBoardVO.setAuthor(author);
         botBoardVO.setType(botType);
         botBoardVO.setState("wait");
 
-        boolean result = false;
-        result = botBoardDAO.updateBotBoardItemStateStop(botBoardVO);
+        boolean result = botBoardDAO.insertOrUpdateBoardItem(botBoardVO); //botBoardDAO.updateBotBoardItemStateStop(botBoardVO);
         if (!result) return Mono.just(false);
 
         return Mono.just(result);

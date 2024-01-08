@@ -93,7 +93,7 @@ public class BotBoardDAO {
     @Transactional
     public boolean insertOrUpdateBoardItem(BotBoardVO vo) {
         try {
-            String sql = String.format("SELECT COUNT(*) BotBoard WHERE article_id = '%s' AND type = '%s'", vo.getArticleId(), vo.getType());
+            String sql = String.format("SELECT COUNT(*) FROM BotBoard WHERE article_id = '%s' AND type = '%s'", vo.getArticleId(), vo.getType());
             int rowCount = this.template.queryForObject(sql, Integer.class);
             if (rowCount == 0) {
                 insertBotBoardItem(vo);
