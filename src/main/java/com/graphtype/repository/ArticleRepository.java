@@ -127,9 +127,9 @@ public class ArticleRepository {
 
     }
 
-    public boolean deleteItem(String articleId, String author) {
+    public boolean deleteItem(String author, String articleId) {
         try {
-            dynamoDBMapper.delete(dynamoDBMapper.load(Article.class, articleId, author));
+            dynamoDBMapper.delete(dynamoDBMapper.load(Article.class, author, articleId));
         } catch (Exception err) {
             return false;
         }

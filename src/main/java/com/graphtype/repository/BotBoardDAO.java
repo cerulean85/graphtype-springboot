@@ -22,9 +22,9 @@ public class BotBoardDAO {
     }
 
     @Transactional
-    public BotBoardVO getBotState(String articleId) {
+    public BotBoardVO getBotState(String articleId, String type) {
         try{
-            String sql = "SELECT * FROM botboard WHERE article_id = '" + articleId + "' ORDER BY idx DESC LIMIT 1";
+            String sql = "SELECT * FROM botboard WHERE article_id = '" + articleId + "' AND type = '" + type + "' ORDER BY idx DESC LIMIT 1";
             List<BotBoardVO> list = this.template.query(sql, new RowMapper<BotBoardVO>() {
                 @Override
                 public BotBoardVO mapRow(ResultSet rs, int rowNum) throws SQLException {

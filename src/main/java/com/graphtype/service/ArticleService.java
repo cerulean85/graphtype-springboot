@@ -31,8 +31,8 @@ public class ArticleService {
         return Mono.just(articleRepository.getItem(author, articleId));
     }
 
-    public Mono<Article> getFeedback(String author, String articleId) {
-        BotBoardVO bot = botBoardDAO.getBotState(articleId);
+    public Mono<Article> getFeedback(String author, String articleId, String type) {
+        BotBoardVO bot = botBoardDAO.getBotState(articleId, type);
         String state = (bot == null) ? "error" : bot.getState();
 
         Article article = new Article();
@@ -62,6 +62,11 @@ public class ArticleService {
         botBoardVO.setArticleId(article.getArticleId());
         botBoardVO.setState("idle");
         botBoardVO.setAuthor(article.getAuthor());
+
+        botBoardVO.setType("chat_gpt");
+        botBoardDAO.insertOrUpdateBoardItem(botBoardVO);
+
+        botBoardVO.setType("gemini");
         botBoardDAO.insertOrUpdateBoardItem(botBoardVO);
 
         return res;
@@ -73,9 +78,7 @@ public class ArticleService {
     public Mono<ArticleResponse> searchItems(String searchText, int pageNo) {
         return Mono.just(articleRepository.searchItems(searchText, pageNo));
     }
-    public Mono<Boolean> deleteItem(Article article, AwsS3Uploader awsS3Uploader) {
-        String articleId = article.getArticleId();
-        String author = article.getAuthor();
+    public Mono<Boolean> deleteItem(String author, String articleId, AwsS3Uploader awsS3Uploader) {
         Mono<Article> selectRes = this.getItem(author, articleId);
         Article readArticle = selectRes.block();
 
@@ -91,10 +94,10 @@ public class ArticleService {
         articleResourceDAO.deleteArticleResource(resources);
 
         BotBoardVO botBoardVO = new BotBoardVO();
-        botBoardVO.setArticleId(article.getArticleId());
+        botBoardVO.setArticleId(articleId);
         botBoardDAO.deleteBotBoardItem(botBoardVO);
 
-        return  Mono.just(articleRepository.deleteItem(articleId, author));
+        return  Mono.just(articleRepository.deleteItem(author, articleId));
     }
 
     public Mono<String> updateItem(Article article) {

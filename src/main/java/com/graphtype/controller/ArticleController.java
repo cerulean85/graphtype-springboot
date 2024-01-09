@@ -40,12 +40,13 @@ public class ArticleController {
         return res.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/chat/feedback/{author}/{articleId}")
+    @GetMapping("/chat/feedback/{author}/{articleId}/{type}")
     Mono<ResponseEntity<Article>> getFeedback (
             @PathVariable("author") String author,
-            @PathVariable("articleId") String articleId)
+            @PathVariable("articleId") String articleId,
+            @PathVariable("type") String type)
     {
-        Mono<Article> res = articleService.getFeedback(author, articleId);
+        Mono<Article> res = articleService.getFeedback(author, articleId, type);
         return res.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
@@ -78,16 +79,19 @@ public class ArticleController {
     }
 
     @DeleteMapping("/article")
-    Mono<ResponseEntity<Boolean>> deleteItem(@RequestBody Article article)
+    Mono<ResponseEntity<Boolean>> deleteItem(
+            @RequestParam("author") String author,
+            @RequestParam("articleId") String articleId
+    )
     {
-        Mono<Boolean> res = articleService.deleteItem(article, awsS3Uploader);
+        Mono<Boolean> res = articleService.deleteItem(author, articleId, awsS3Uploader);
         return res.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/article")
     public Mono<ResponseEntity<String>> updateItem(@RequestBody Article article)
     {
-        article.setFeedback(null);
+//        article.setFeedback(null);
         Mono<String> res = articleService.updateItem(article);
         return res.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
     }
