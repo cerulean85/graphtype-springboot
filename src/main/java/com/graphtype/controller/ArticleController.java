@@ -3,10 +3,8 @@ package com.graphtype.controller;
 import com.graphtype.component.AwsS3Uploader;
 import com.graphtype.model.Article;
 import com.graphtype.model.ArticleResponse;
-import com.graphtype.model.BotBoardVO;
 import com.graphtype.model.File;
 import com.graphtype.repository.ArticleResourceDAO;
-import com.graphtype.repository.BotBoardDAO;
 import com.graphtype.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
